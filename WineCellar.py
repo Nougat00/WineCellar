@@ -1,10 +1,12 @@
-from flask import Flask, render_template, url_for, redirect
+
+from flask import Flask, render_template, url_for, redirect, flash, request
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from flask_bcrypt import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
+
 app = Flask(__name__)
 app.config["DEBUG"] = True
 SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
@@ -78,6 +80,12 @@ def login():
             if check_password_hash(user.password, form.password.data):
                 login_user(user)
                 return redirect(url_for('dashboard'))
+            else:
+                flash("Nieprawidłowa nazwa użytkownika lub hasło", "warning")
+                return redirect(request.url)
+        else:
+            flash("Nieprawidłowa nazwa użytkownika lub hasło", "warning")
+            return redirect(request.url)
     return render_template('login.html', form=form)
 
 
@@ -97,14 +105,12 @@ def logout():
 @ app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
-
     if form.validate_on_submit():
         hashed_password = generate_password_hash(form.password.data)
         new_user = User(username=form.username.data, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('login'))
-
     return render_template('register.html', form=form)
 
 
