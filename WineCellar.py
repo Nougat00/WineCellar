@@ -5,6 +5,8 @@ from flask_wtf import FlaskForm
 from flask_bcrypt import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
+from flask import jsonify, request
+
 app = Flask(__name__)
 app.config["DEBUG"] = True
 SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
@@ -20,6 +22,8 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = 'DZIWKI'
 
 db = SQLAlchemy(app)
+
+
 class User(db.Model, UserMixin):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -39,10 +43,10 @@ def load_user(user_id):
 
 class RegisterForm(FlaskForm):
     username = StringField(validators=[
-                           InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
+        InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
 
     password = PasswordField(validators=[
-                             InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
+        InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
 
     submit = SubmitField('Register')
 
@@ -56,10 +60,10 @@ class RegisterForm(FlaskForm):
 
 class LoginForm(FlaskForm):
     username = StringField(validators=[
-                           InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
+        InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
 
     password = PasswordField(validators=[
-                             InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
+        InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
 
     submit = SubmitField('Login')
 
@@ -94,7 +98,7 @@ def logout():
     return redirect(url_for('login'))
 
 
-@ app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
 
@@ -107,6 +111,7 @@ def register():
 
     return render_template('register.html', form=form)
 
+
 @app.route('/location')
 def location_on_map():
     # Your Google Maps API key
@@ -114,6 +119,19 @@ def location_on_map():
     # Location coordinates (latitude, longitude)
     location = "54.341330,18.569030"
     return render_template("location_map.html", api_key=api_key, location=location)
+
+
+@app.route('/points')
+def pointsFunc():
+    points = [[37.7749, -122.4194], [37.788022, -122.399797], [37.7999, -122.4469]]
+    return render_template('index.html', points=points)
+
+
+@app.route('/get_points', methods=['GET'])
+def get_points():
+    points = [[37.7749, -122.4194], [37.788022, -122.399797], [37.7999, -122.4469]]
+    return jsonify(points)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
