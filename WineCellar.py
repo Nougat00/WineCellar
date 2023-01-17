@@ -113,6 +113,13 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
+@app.route('/location')
+def location_on_map():
+    # Your Google Maps API key
+    api_key = "AIzaSyBs7UtztlVDEZtUey4m--mY5-m9y-gR1NQ"
+    # Location coordinates (latitude, longitude)
+    location = "54.341330,18.569030"
+    return render_template("location_map.html", api_key=api_key, location=location)
 
 if __name__ == "__main__":
     app.run(debug=True)
