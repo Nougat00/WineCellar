@@ -1,15 +1,11 @@
 from flask import Flask, render_template, url_for, redirect, abort
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
-from sqlalchemy import  create_engine
 from flask_wtf import FlaskForm
 from flask_bcrypt import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask import jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-import pyodbc
-import urllib
-
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -61,8 +57,8 @@ class Sklep(db.Model):
     status = db.Column(db.Boolean())
     data_rejestracji = db.Column(db.Date())
     valid_from_date = db.Column(db.Date())
-    szer_geogr = db.Column(db.Numeric(12,9))
-    dl_geogr = db.Column(db.Numeric(12,9))
+    szer_geogr = db.Column(db.Numeric(12, 9))
+    dl_geogr = db.Column(db.Numeric(12, 9))
 
 
 class Oferta_sklepu(db.Model):
@@ -128,7 +124,7 @@ def login():
     return render_template('login.html', form=form)
 
 
-@app.route('/dashboard', methods=['GET', 'POST'])
+@app.route('/dashboard')
 @login_required
 def dashboard():
     return render_template('dashboard.html')
@@ -139,7 +135,6 @@ def dashboard():
 def logout():
     logout_user()
     return redirect(url_for('login'))
-
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -165,46 +160,30 @@ def location_on_map():
     return render_template("location_map.html", api_key=api_key, location=location)
 
 
-class School:
-    def __init__(self, key, name, lat, lng):
-        self.key = key
-        self.name = name
-        self.lat = lat
-        self.lng = lng
+# shops = (
+#     Shop('garix', 'Garix II, Gdańsk', 54.34867, 18.61953, "Kartuska 118A, 80-138 Gdańsk"),
+#     Shop('alkospot', 'Alkospot', 54.3431826, 18.6546794, "Chmielna 71, 80-748 Gdańsk"),
+#     Shop('promil', 'Sklep "Promil"', 54.3556115, 18.5755113, "Powstania Listopadowego 2F, 80-287 Gdańsk")
+# )
 
 
-schools = (
-    School('hv', 'Happy Valley Elementary', 37.9045286, -122.1445772),
-    School('stanley', 'Stanley Middle', 37.8884474, -122.1155922),
-    School('wci', 'Walnut Creek Intermediate', 37.9093673, -122.0580063)
-)
-schools_by_key = {school.key: school for school in schools}
 
 
-@app.route("/shools")
-def main():
-    return render_template('main.html', schools=schools)
+@app.route("/shops")
+def shops():
+    shops = Sklep.query.all()
+    return render_template('shops.html', shops=shops)
 
 
-@app.route("/<school_code>")
-def show_school(school_code):
-    school = schools_by_key.get(school_code)
-    if school:
-        return render_template('map.html', school=school)
+@app.route("/shops/<kod_sklepu>")
+def show_shop(kod_sklepu):
+    shops = Sklep.query.all()
+    shops_by_key = {shop.kod_sklepu: shop for shop in shops}
+    shop = shops_by_key.get(kod_sklepu)
+    if shop:
+        return render_template('map.html', shop=shop)
     else:
         abort(404)
-
-
-@app.route('/points')
-def pointsFunc():
-    points = [[37.7749, -122.4194], [37.788022, -122.399797], [37.7999, -122.4469]]
-    return render_template('index.html', points=points)
-
-
-@app.route('/get_points', methods=['GET'])
-def get_points():
-    points = [[37.7749, -122.4194], [37.788022, -122.399797], [37.7999, -122.4469]]
-    return jsonify(points)
 
 
 if __name__ == "__main__":

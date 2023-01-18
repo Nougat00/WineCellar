@@ -4,23 +4,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
     <title>Local Schools</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
-          integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdj ZlpLegxhjVME1fgj WPGmkzs7"
-          crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBs7UtztlVDEZtUey4m--mY5-m9y-gR1NQ"></script>
     <script type="text/javascript">
         function initMap() {
-            new google.maps.Map(document.getElementById('map'), {
-                center: {lat: {{school. lat}}, lng: {{school. lng}}},
+            var map = new google.maps.Map(document.getElementById('map'), {
+                center: {lat: {{shop. szer_geogr}}, lng: {{shop. dl_geogr}}},
                 zoom: 16
             });
+            var marker = new google.maps.Marker({
+    position: {lat: {{shop. szer_geogr}}, lng: {{shop. dl_geogr}}}, // Example latitude and longitude
+    map: map
+});
         }
     </script>
 </head>
 <body onload="initMap()">
+ <input type="button" class="btn btn-danger" value="Wstecz!" onclick="history.go(-1)">
 <div class="container">
-    <h1>{{ school.name }} School</h1>
-    <div id="map" style="width: 100%; height:900px;"></div>
+    <h1>{{ shop.nazwa_sklepu }}</h1>
+    <div id="map" style="width: 100%; height:500px;"></div>
 </div>
 </body>
 </html>
