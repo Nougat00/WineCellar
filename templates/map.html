@@ -11,19 +11,20 @@
     <script type="text/javascript">
         function initMap() {
             var map = new google.maps.Map(document.getElementById('map'), {
-                center: {lat: {{shop. lat}}, lng: {{shop. lng}}},
+                center: {lat: {{shop. szer_geogr}}, lng: {{shop. dl_geogr}}},
                 zoom: 16
             });
             var marker = new google.maps.Marker({
-    position: {lat: {{shop. lat}}, lng: {{shop. lng}}}, // Example latitude and longitude
+    position: {lat: {{shop. szer_geogr}}, lng: {{shop. dl_geogr}}}, // Example latitude and longitude
     map: map
 });
         }
     </script>
 </head>
 <body onload="initMap()">
+ <input type="button" class="btn btn-danger" value="Wstecz!" onclick="history.go(-1)">
 <div class="container">
-    <h1>{{ shop.name }}</h1>
+    <h1>{{ shop.nazwa_sklepu }}</h1>
     <div id="map" style="width: 100%; height:500px;"></div>
 </div>
 </body>
