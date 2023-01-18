@@ -59,7 +59,8 @@ class Sklep(db.Model):
     status = db.Column(db.Boolean())
     data_rejestracji = db.Column(db.Date())
     valid_from_date = db.Column(db.Date())
-    valid_from_date = db.Column(db.Date())
+    long = db.Column(db.String(20))
+    lat = db.Column(db.String(20))
 
 
 class Oferta_sklepu(db.Model):
