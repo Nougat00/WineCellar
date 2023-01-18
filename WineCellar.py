@@ -31,6 +31,46 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(80), nullable=False)
 
 
+class Produkt(db.Model):
+    __tablename__ = "produkt"
+    id = db.Column(db.Integer, primary_key=True)
+    kod_produktu = db.Column(db.String(32), nullable=False)
+    nazwa_produktu = db.Column(db.String(80), nullable=False)
+    typ_produktu = db.Column(db.String(80))
+    kraj_pochodzenia = db.Column(db.String(80))
+    region = db.Column(db.String(80))
+    rocznik = db.Column(db.String(80))
+    szczep = db.Column(db.String(80))
+    opis = db.Column(db.String(250))
+    status = db.Column(db.Boolean())
+    created_ts = db.Column(db.DateTime())
+    valid_from_date = db.Column(db.DateTime())
+    valid_to_date = db.Column(db.DateTime())
+
+
+class Sklep(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    kod_sklepu = db.Column(db.String(10))
+    kod_sieci = db.Column(db.String(10))
+    nazwa = db.Column(db.String(50))
+    email = db.Column(db.String(30))
+    telefon = db.Column(db.String(12))
+    data_otwarcia = db.Column(db.Date())
+    status = db.Column(db.Boolean())
+    data_rejestracji = db.Column(db.Date())
+    valid_from_date = db.Column(db.Date())
+    valid_from_date = db.Column(db.Date())
+
+
+class Oferta_sklepu(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sklep_id = db.Column(db.Integer, db.ForeignKey('sklep.id'))
+    produkt_id = db.Column(db.Integer, db.ForeignKey('produkt.id'))
+    status = db.Column(db.Boolean())
+    data_wprowadzenia = db.Column(db.Date())
+    liczba_sztuk = db.Column(db.Integer())
+
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
