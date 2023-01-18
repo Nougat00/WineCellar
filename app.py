@@ -1,26 +1,44 @@
 from flask import Flask, render_template, url_for, redirect
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
-from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import  create_engine
 from flask_wtf import FlaskForm
 from flask_bcrypt import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask import jsonify, request
+from flask_sqlalchemy import SQLAlchemy
+import pyodbc as pyodbc
+import urllib
+
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
-SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
-    username="freedb_WineCellar",
-    password="n86gtpe&%zcWBGu",
-    hostname="sql.freedb.tech",
-    databasename="freedb_Winecellar",
-)
-app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
-app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
+#     username="freedb_WineCellar",
+#     password="n86gtpe&%zcWBGu",
+#     hostname="sql.freedb.tech",
+#     databasename="freedb_Winecellar",
+# )
 
-app.secret_key = 'DZIWKI'
+server = "winecellar.database.windows.net"
+database = "WineCellar"
+user = "winecellar"
+password = "t2@h^2#TQ!aA2&R25R56xQ7@"
 
+driver = '{ODBC Driver 17 for SQL Server}'
+
+
+# Configure Database URI:
+params = urllib.parse.quote_plus("DRIVER={ODBC Driver 18 for SQL Server};SERVER=sqlhost.database.windows.net;DATABASE=WineCellar;UID=winecellar;PWD=t2@h^2#TQ!aA2&R25R56xQ7@")
+
+
+# initialization
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'supersecret'
+app.config['SQLALCHEMY_DATABASE_URI'] = "mssql+pyodbc:///?odbc_connect=%s" % params
+app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+
+# extensions
 db = SQLAlchemy(app)
 
 
@@ -137,6 +155,7 @@ def dashboard():
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
 
 
 @app.route('/register', methods=['GET', 'POST'])
