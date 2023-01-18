@@ -7,35 +7,19 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask import jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-import pyodbc as pyodbc
+import pyodbc
 import urllib
 
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
-# SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
-#     username="freedb_WineCellar",
-#     password="n86gtpe&%zcWBGu",
-#     hostname="sql.freedb.tech",
-#     databasename="freedb_Winecellar",
-# )
+server = "winecellar.mysql.database.azure.com"
+database = "mysql"
+username = "winecellar"
+password = "Dupsko1234"
 
-server = "winecellar.database.windows.net"
-database = "WineCellar"
-user = "winecellar"
-password = "t2@h^2#TQ!aA2&R25R56xQ7@"
-
-driver = '{ODBC Driver 17 for SQL Server}'
-
-
-# Configure Database URI:
-params = urllib.parse.quote_plus("DRIVER={ODBC Driver 18 for SQL Server};SERVER=sqlhost.database.windows.net;DATABASE=WineCellar;UID=winecellar;PWD=t2@h^2#TQ!aA2&R25R56xQ7@")
-
-
-# initialization
-app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://winecellar:Dupsko1234@winecellar.mysql.database.azure.com/winecellar"
 app.config['SECRET_KEY'] = 'supersecret'
-app.config['SQLALCHEMY_DATABASE_URI'] = "mssql+pyodbc:///?odbc_connect=%s" % params
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 
 # extensions
