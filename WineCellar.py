@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect
+from flask import Flask, render_template, url_for, redirect, abort
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
@@ -119,6 +119,36 @@ def location_on_map():
     # Location coordinates (latitude, longitude)
     location = "54.341330,18.569030"
     return render_template("location_map.html", api_key=api_key, location=location)
+
+
+class School:
+    def __init__(self, key, name, lat, lng):
+        self.key = key
+        self.name = name
+        self.lat = lat
+        self.lng = lng
+
+
+schools = (
+    School('hv', 'Happy Valley Elementary', 37.9045286, -122.1445772),
+    School('stanley', 'Stanley Middle', 37.8884474, -122.1155922),
+    School('wci', 'Walnut Creek Intermediate', 37.9093673, -122.0580063)
+)
+schools_by_key = {school.key: school for school in schools}
+
+
+@app.route("/shools")
+def main():
+    return render_template('main.html', schools=schools)
+
+
+@app.route("/<school_code>")
+def show_school(school_code):
+    school = schools_by_key.get(school_code)
+    if school:
+        return render_template('map.html', school=school)
+    else:
+        abort(404)
 
 
 @app.route('/points')
