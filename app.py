@@ -165,32 +165,33 @@ def location_on_map():
     return render_template("location_map.html", api_key=api_key, location=location)
 
 
-class School:
-    def __init__(self, key, name, lat, lng):
+class Shop:
+    def __init__(self, key, name, lat, lng, address):
         self.key = key
         self.name = name
         self.lat = lat
         self.lng = lng
+        self.address = address
 
 
-schools = (
-    School('hv', 'Happy Valley Elementary', 37.9045286, -122.1445772),
-    School('stanley', 'Stanley Middle', 37.8884474, -122.1155922),
-    School('wci', 'Walnut Creek Intermediate', 37.9093673, -122.0580063)
+shops = (
+    Shop('garix', 'Garix II, Gdańsk', 54.34867, 18.61953, "Kartuska 118A, 80-138 Gdańsk"),
+    Shop('alkospot', 'Alkospot', 54.3431826, 18.6546794, "Chmielna 71, 80-748 Gdańsk"),
+    Shop('promil', 'Sklep "Promil"', 54.3556115, 18.5755113, "Powstania Listopadowego 2F, 80-287 Gdańsk")
 )
-schools_by_key = {school.key: school for school in schools}
+shops_by_key = {shop.key: shop for shop in shops}
 
 
-@app.route("/shools")
+@app.route("/shops")
 def main():
-    return render_template('main.html', schools=schools)
+    return render_template('main.html', shops=shops)
 
 
-@app.route("/<school_code>")
-def show_school(school_code):
-    school = schools_by_key.get(school_code)
-    if school:
-        return render_template('map.html', school=school)
+@app.route("/<shop_code>")
+def show_school(shop_code):
+    shop = shops_by_key.get(shop_code)
+    if shop:
+        return render_template('map.html', shop=shop)
     else:
         abort(404)
 
