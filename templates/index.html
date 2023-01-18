@@ -1,10 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Dziwkki</title>
+    <title>Nearby Places</title>
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBs7UtztlVDEZtUey4m--mY5-m9y-gR1NQ&callback=initMap"></script>
+    <script>
+        var map;
+        var markers = [];
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: {lat: -34.397, lng: 150.644},
+                zoom: 8
+            });
+
+            fetch('/get_markers')
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(marker => {
+                        addMarkerToMap(marker);
+                    });
+                });
+        }
+
+        function addMarkerToMap(marker) {
+            var newMarker = new google.maps.Marker({
+                position: {lat: marker.lat, lng: marker.lng},
+                map: map
+            });
+            markers.push(newMarker);
+        }
+
+    </script>
 </head>
 <body>
-<h1>DZIWKI</h1>
+<div id="map" style="height: 500px;"></div>
 </body>
 </html>
