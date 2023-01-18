@@ -1,14 +1,11 @@
 from flask import Flask, render_template, url_for, redirect, abort
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
-from sqlalchemy import  create_engine
 from flask_wtf import FlaskForm
 from flask_bcrypt import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask import jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-import pyodbc
-import urllib
 
 
 app = Flask(__name__)
@@ -128,7 +125,7 @@ def login():
     return render_template('login.html', form=form)
 
 
-@app.route('/dashboard', methods=['GET', 'POST'])
+@app.route('/dashboard')
 @login_required
 def dashboard():
     return render_template('dashboard.html')
@@ -183,12 +180,13 @@ shops_by_key = {shop.key: shop for shop in shops}
 
 
 @app.route("/shops")
-def main():
-    return render_template('main.html', shops=shops)
+def shops():
+    shops = Sklep.query.all()
+    return render_template('shops.html', shops=shops)
 
 
-@app.route("/<shop_code>")
-def show_school(shop_code):
+@app.route("/shops/<shop_code>")
+def show_shop(shop_code):
     shop = shops_by_key.get(shop_code)
     if shop:
         return render_template('map.html', shop=shop)
