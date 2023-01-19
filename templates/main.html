@@ -12,13 +12,17 @@
         {% endblock %}
 
         .navbar {
-            background-color: #474749;
+            background-color: #828282;
         }
 
-        .navbar a {
-            color: #EA5455;
+        #navbarNav a {
+            color: aliceblue;
         }
 
+        .custom-btn {
+            background-color: #EA5455;
+            font-weight: bold;
+        }
 
         body {
             background-color: #2A2A2B;
@@ -39,10 +43,13 @@
         }
     </style>
 </head>
+{% block scripts %}
+{% endblock %}
+
 <body>
 {% block navbar %}
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Logo</a>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <a class="navbar-brand" href="{{url_for('dashboard')}}"><img src="../static/img/W.png" height="50px"></a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -50,18 +57,15 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Main Page</a>
+                    <a class="nav-link" href="{{url_for('shops')}}">Sklepy</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Shops</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Find Product</a>
+                    <a class="nav-link" href="#">Znajdź produkt</a>
                 </li>
             </ul>
         </div>
         <div class="navbar-nav">
-            <a class="nav-item nav-link" href="#" style="color: #EA5455">Log Out</a>
+             <a class="btn btn-danger" href="{{url_for('home')}}">Wyloguj się</a>
         </div>
     </nav>
 {% endblock %}

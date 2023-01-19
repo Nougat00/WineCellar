@@ -1,31 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>WineCellar</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-    <style>
-        body {
-            background-color: #2A2A2B;
-            color: white;
-        }
+{% extends "main.html" %}
+{% block style %}
         .custom-btn {
             background-color: #EA5455;
             font-weight: bold;
         }
+    body {
+            background-color: #2A2A2B;
+            color: white;
+        }
         h3, h4 {
             text-align: center;
         }
-    </style>
-</head>
-<body>
+    a{
+    }
+{% endblock %}
+{% block content %}
     <div class="container">
-        <div class="d-flex justify-content-between">
-            <a class="btn btn-danger" href="{{url_for('dashboard')}}">Strona główna</a>
-            <a class="btn btn-danger" href="{{url_for('logout')}}">Wyloguj się</a>
-
-        </div>
-
         <h3 class="mt-5">Witaj na stronie WineCellar!</h3>
         <h4>Co chciałbyś dziś wypić?</h4>
         <div class="d-flex justify-content-center">
@@ -33,5 +23,4 @@
             <a class="btn btn-danger" href="{{url_for('shops')}}">Powiedz nam jakie wino chciałbyś wypić my je dla ciebie znajdziemy!</a>
         </div>
     </div>
-</body>
-</html>
+{% endblock %}
