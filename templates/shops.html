@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>Shops</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <style>
+        .custom-btn {
+    color: #EA5455;
+        }
+                body {
+            background-color: #2A2A2B;
+        }
+
+    </style>
+</head>
+<body>
+        <div class="d-flex justify-content-between">
+            <a class="btn btn-danger" href="{{url_for('dashboard')}}">Strona główna</a>
+            <a class="btn btn-danger" href="{{url_for('logout')}}">Wyloguj się</a>
+
+        </div>
+    <a class="btn btn-lg custom-btn" href="{{url_for('logout')}}">Press here to logout</a>
+<div class="container">
+    <h1>Choose a Shop</h1>
+    {% for shop in shops %}
+        <p><a class="btn btn-lg custom-btn" href="shops/{{ shop.kod_sklepu }}">{{ shop.nazwa }}</a></p>
+    {% endfor %}
+</div>
+</body>
+</html>
