@@ -160,15 +160,6 @@ def location_on_map():
     return render_template("location_map.html", api_key=api_key, location=location)
 
 
-# shops = (
-#     Shop('garix', 'Garix II, Gdańsk', 54.34867, 18.61953, "Kartuska 118A, 80-138 Gdańsk"),
-#     Shop('alkospot', 'Alkospot', 54.3431826, 18.6546794, "Chmielna 71, 80-748 Gdańsk"),
-#     Shop('promil', 'Sklep "Promil"', 54.3556115, 18.5755113, "Powstania Listopadowego 2F, 80-287 Gdańsk")
-# )
-
-
-
-
 @app.route("/shops")
 def shops():
     shops = Sklep.query.all()
@@ -180,8 +171,28 @@ def show_shop(kod_sklepu):
     shops = Sklep.query.all()
     shops_by_key = {shop.kod_sklepu: shop for shop in shops}
     shop = shops_by_key.get(kod_sklepu)
+    result = db.engine.execute("select pr.nazwa_produktu, os.liczba_sztuk, pr.typ_produktu, pr.kraj_pochodzenia, pr.region, pr.rocznik, pr.szczep, pr.opis from produkt pr join oferta_sklepu os on pr.id = os.produkt_id join sklep sk on os.sklep_id = sk.id where os.liczba_sztuk > 0 and kod_sklepu = '"+kod_sklepu+"'")
+    products = [row for row in result]
+    print(products)
     if shop:
-        return render_template('map.html', shop=shop)
+        return render_template('map.html', shop=shop, products=products)
+    else:
+        abort(404)
+
+
+@app.route("/wines")
+def wines():
+    products = Produkt.query.all()
+    return render_template('wines.html', products=products)
+
+
+@app.route("/wines/<kod_produktu>")
+def show_product(kod_produktu):
+    products = Produkt.query.all()
+    products_by_key = {product.kod_produktu: product for product in products}
+    product = products_by_key.get(kod_produktu)
+    if product:
+        return render_template('product.html', product=product)
     else:
         abort(404)
 
