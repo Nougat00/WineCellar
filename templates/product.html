@@ -1,0 +1,46 @@
+{% extends "main.html" %}
+{% block style %}
+    dl{
+    color: aliceblue;
+    }
+    .opis p{
+    color: aliceblue;
+    }
+    .img-fluid{
+    height: 400px;
+    }
+    .row{
+    margin: 50px;
+    display: flex;
+    align-items: center;}
+
+
+
+{% endblock %}
+
+{% block content %}
+    <h1 class="my-4">
+        {{ produkt.nazwa_produktu }}
+    </h1>
+    <div class="row">
+        <div class="col-md-3">
+            <img class="img-fluid" src="{{ produkt.link }}">
+        </div>
+        <div class="col-lg-4">
+            <h3>Opis</h3>
+            <div class="opis">
+                <p>
+                    {{ produkt.opis }}
+                </p>
+            </div>
+            <dl>
+                <dt>Szczep</dt>
+                <dd>{{ produkt.szczep }}</dd>
+                <dt>Region</dt>
+                <dd>{{ produkt.region }}</dd>
+                <dt>Rocznik</dt>
+                <dd>{{ produkt.rocznik }}</dd>
+            </dl>
+        </div>
+    </div>
+{% endblock %}

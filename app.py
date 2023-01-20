@@ -44,6 +44,7 @@ class Produkt(db.Model):
     created_ts = db.Column(db.DateTime())
     valid_from_date = db.Column(db.DateTime())
     valid_to_date = db.Column(db.DateTime())
+    link = db.Column(db.String(200))
 
 
 class Sklep(db.Model):
@@ -157,6 +158,7 @@ def register():
 
 
 @app.route('/location')
+@login_required
 def location_on_map():
     # Your Google Maps API key
     api_key = "AIzaSyBs7UtztlVDEZtUey4m--mY5-m9y-gR1NQ"
@@ -166,19 +168,20 @@ def location_on_map():
 
 
 @app.route("/shops")
+@login_required
 def shops():
     shops = Sklep.query.all()
     return render_template('shops.html', shops=shops)
 
 
 @app.route("/shops/<kod_sklepu>")
+@login_required
 def show_shop(kod_sklepu):
     shops = Sklep.query.all()
     shops_by_key = {shop.kod_sklepu: shop for shop in shops}
     shop = shops_by_key.get(kod_sklepu)
-    result = db.engine.execute("select pr.nazwa_produktu, os.liczba_sztuk, pr.typ_produktu, pr.kraj_pochodzenia, pr.region, pr.rocznik, pr.szczep, pr.opis from produkt pr join oferta_sklepu os on pr.id = os.produkt_id join sklep sk on os.sklep_id = sk.id where os.liczba_sztuk > 0 and kod_sklepu = '"+kod_sklepu+"'")
+    result = db.engine.execute("select pr.nazwa_produktu, os.liczba_sztuk, pr.typ_produktu, pr.kraj_pochodzenia, pr.region, pr.rocznik, pr.szczep, pr.opis, pr.kod_produktu from produkt pr join oferta_sklepu os on pr.id = os.produkt_id join sklep sk on os.sklep_id = sk.id where os.liczba_sztuk > 0 and kod_sklepu = '"+kod_sklepu+"'")
     products = [row for row in result]
-    print(products)
     if shop:
         return render_template('map.html', shop=shop, products=products)
     else:
@@ -186,18 +189,20 @@ def show_shop(kod_sklepu):
 
 
 @app.route("/wines")
+@login_required
 def wines():
     products = Produkt.query.all()
     return render_template('wines.html', products=products)
 
 
-@app.route("/wines/<kod_produktu>")
+@app.route("/product/<kod_produktu>")
+@login_required
 def show_product(kod_produktu):
     products = Produkt.query.all()
     products_by_key = {product.kod_produktu: product for product in products}
-    product = products_by_key.get(kod_produktu)
-    if product:
-        return render_template('product.html', product=product)
+    produkt = products_by_key.get(kod_produktu)
+    if produkt:
+        return render_template('product.html', produkt=produkt)
     else:
         abort(404)
 

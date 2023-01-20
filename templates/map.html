@@ -1,12 +1,17 @@
 {% extends "main.html" %}
 
 {% block style %}
+    .more a{
+    color: aliceblue;
+    font-size: 12px;
+    }
     td{
     color: aliceblue;
     }
     th{
     color: aliceblue;
     }
+
 {% endblock %}
     {% block scripts %}
 
@@ -27,12 +32,11 @@
 {% endblock %}
 {% block content %}
 <body onload="initMap()">
-<input type="button" class="btn btn-danger" value="Wstecz!" onclick="history.go(-1)">
 <div class="container">
     <h1>{{ shop.nazwa_sklepu }}</h1>
     <div id="map" style="width: 100%; height:500px;"></div>
 </div>
-
+<h3>Asortyment</h3>
 <table id="winesTable" class="table table-striped">
     <thead>
     <tr>
@@ -55,6 +59,7 @@
             <td>{{ product.region }}</td>
             <td>{{ product.rocznik }}</td>
             <td>{{ product.szczep }}</td>
+            <td> <div class="more"> <a class="btn btn-lg custom-btn" href="/product/{{ product.kod_produktu }}">Zobacz więcej</a></div></td>
         </tr>
     {% endfor %}
     </tbody>
