@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect, abort
+from flask import Flask, render_template, url_for, redirect, abort, flash
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
 from flask_wtf import FlaskForm
 from flask_bcrypt import generate_password_hash, check_password_hash
@@ -82,12 +82,12 @@ def load_user(user_id):
 
 class RegisterForm(FlaskForm):
     username = StringField(validators=[
-        InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
+        InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Nazwa użytkownika"})
 
     password = PasswordField(validators=[
-        InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
+        InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Hasło"})
 
-    submit = SubmitField('Register')
+    submit = SubmitField('Zarejestruj się')
 
     def validate_username(self, username):
         existing_user_username = User.query.filter_by(
@@ -99,12 +99,12 @@ class RegisterForm(FlaskForm):
 
 class LoginForm(FlaskForm):
     username = StringField(validators=[
-        InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
+        InputRequired(), Length(min=0, max=20)], render_kw={"placeholder": "Nazwa użytkownika"})
 
     password = PasswordField(validators=[
-        InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
+        InputRequired(), Length(min=0, max=20)], render_kw={"placeholder": "Hasło"})
 
-    submit = SubmitField('Login')
+    submit = SubmitField('Zaloguj się')
 
 
 @app.route('/')
@@ -121,6 +121,10 @@ def login():
             if check_password_hash(user.password, form.password.data):
                 login_user(user)
                 return redirect(url_for('dashboard'))
+            else:
+                flash("Nieprawidłowy login lub hasło", "warning")
+        else:
+            flash("Nieprawidłowy login lub hasło", "warning")
     return render_template('login.html', form=form)
 
 
@@ -147,7 +151,8 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('login'))
-
+    else:
+        flash("Wybrana nazwa użytkownika jest już zajęta", "warning")
     return render_template('register.html', form=form)
 
 
