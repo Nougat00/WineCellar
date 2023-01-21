@@ -1,0 +1,44 @@
+{% extends 'main.html' %}
+
+{% block style %}
+        .more a{
+    color: aliceblue;
+    font-size: 12px;
+    }
+    td{
+    color: aliceblue;
+    }
+    th{
+    color: aliceblue;
+    }
+{% endblock %}
+{% block content %}
+<h3>Twoja piwniczka ulubionych produktów</h3>
+<table id="winesTable" class="table table-striped">
+    <thead>
+    <tr>
+        <th>Nazwa produktu</th>
+        <th>Liczba sztuk</th>
+        <th>Typ produktu</th>
+        <th>Kraj pochodzenia</th>
+        <th>Region</th>
+        <th>Rocznik</th>
+        <th>Szczep</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for product in products %}
+        <tr>
+            <td>{{ product.nazwa_produktu }}</td>
+            <td>{{ product.liczba_sztuk }}</td>
+            <td>{{ product.typ_produktu}}</td>
+            <td>{{ product.kraj_pochodzenia }}</td>
+            <td>{{ product.region }}</td>
+            <td>{{ product.rocznik }}</td>
+            <td>{{ product.szczep }}</td>
+            <td> <div class="more"> <a class="btn btn-lg custom-btn" href="/product/{{ product.kod_produktu }}">Zobacz więcej</a></div></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

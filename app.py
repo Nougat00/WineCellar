@@ -203,12 +203,18 @@ def show_shop(kod_sklepu):
     else:
         abort(404)
 
-
 @app.route("/wines")
 @login_required
 def wines():
     products = Produkt.query.all()
     return render_template('wines.html', products=products)
+
+@app.route("/cellar")
+@login_required
+def cellar():
+    query = "select pr.nazwa_produktu, pr.typ_produktu, pr.kraj_pochodzenia, pr.region, pr.rocznik, pr.szczep, pr.kod_produktu from produkt pr join fct_polubione pl on pr.id = pl.produkt_id where pl.klient_id = "+ flask_login.current_user.get_id()
+    products = db.session.execute(query).all()
+    return render_template("cellar.html", products=products)
 
 
 def like_wine(kod_produktu):
