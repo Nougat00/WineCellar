@@ -7,6 +7,7 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask import jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -26,10 +27,31 @@ class User(db.Model, UserMixin):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False, unique=True)
+    email_confirmed = db.Column(db.Boolean(), nullable=False, default=False)
     password = db.Column(db.String(80), nullable=False)
+    email_confirm_date = db.Column(db.DateTime)
+    email = db.Column(db.String(120), unique=True, nullable=False)
 
     def get_id(self):
         return str(self.id)
+
+    def get_mail_confirm_token(self):
+        s = URLSafeTimedSerializer(
+            app.config["SECRET_KEY"], salt="email-comfirm"
+        )
+        return s.dumps(self.email, salt="email-confirm")
+
+    @staticmethod
+    def verify_mail_confirm_token(token):
+        try:
+            s = URLSafeTimedSerializer(
+                app.config["SECRET_KEY"], salt="email-confirm"
+            )
+            email = s.loads(token, salt="email-confirm", max_age=3600)
+            return email
+        except (SignatureExpired, BadSignature):
+            return None
+
 
 
 class Produkt(db.Model):
@@ -95,6 +117,16 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+def send_mail_confirmation(user):
+    token = user.get_mail_confirm_token()
+    msg = Message(
+        "Please Confirm Your Email",
+        sender="noreply@demo.com",
+        recipients=[user.email],
+    )
+    msg.html = render_template("mail_welcome_confirm.html", token=token)
+    mail.send(msg)
+
 
 class RegisterForm(FlaskForm):
     username = StringField(validators=[
@@ -123,6 +155,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Zaloguj się')
 
 
+
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -144,6 +177,8 @@ def login():
     return render_template('login.html', form=form)
 
 
+
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -157,19 +192,56 @@ def logout():
     return redirect(url_for('login'))
 
 
+def send_mail_confirmation(user):
+    token = user.get_mail_confirm_token()
+    msg = Message(
+        "Please Confirm Your Email",
+        sender="noreply@demo.com",
+        recipients=[user.email],
+    )
+    msg.html = render_template("mail_welcome_confirm.html", token=token)
+    mail.send(msg)
+
+
+@User.route("/confirm_email/<token>")
+def confirm_email(token):
+    email = User.verify_mail_confirm_token(token)
+    if email:
+        user = db.session.query(User).filter(User.email == email).one_or_none()
+        user.email_confirmed = True
+        user.email_confirm_date = datetime.utcnow()
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for("users.login"))
+        flash(
+            f"Your email has been verified and you can now login to your account",
+            "success",
+        )
+    else:
+        return render_template("errors/token_invalid.html")
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if flask_login.current_user.is_authenticated:
+        return redirect(url_for("dashboard"))
     form = RegisterForm()
-
     if form.validate_on_submit():
-        hashed_password = generate_password_hash(form.password.data)
-        new_user = User(username=form.username.data, password=hashed_password)
-        db.session.add(new_user)
+        hashed_password = generate_password_hash(form.password.data).decode(
+            "utf-8"
+        )
+        user = User(
+            username=form.username.data, email=form.email.data, password=hashed_password
+        )
+        db.session.add(user)
         db.session.commit()
-        return redirect(url_for('login'))
+        send_mail_confirmation(user)
+        return redirect(url_for("login"))
     else:
         flash("Wybrana nazwa użytkownika jest już zajęta", "warning")
-    return render_template('register.html', form=form)
+    return render_template("register.html", form=form)
+
+
 
 
 @app.route('/location')
