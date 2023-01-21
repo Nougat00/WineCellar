@@ -5,7 +5,7 @@ from flask_wtf import FlaskForm
 from flask_bcrypt import generate_password_hash, check_password_hash
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
-from flask import jsonify, request
+from flask import request
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -102,6 +102,8 @@ class RegisterForm(FlaskForm):
 
     password = PasswordField(validators=[
         InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Hasło"})
+    retypepassword = PasswordField(validators=[
+        InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Powtórz hasło"})
 
     submit = SubmitField('Zarejestruj się')
 
@@ -160,15 +162,25 @@ def logout():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
-
-    if form.validate_on_submit():
-        hashed_password = generate_password_hash(form.password.data)
-        new_user = User(username=form.username.data, password=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('login'))
-    else:
-        flash("Wybrana nazwa użytkownika jest już zajęta", "warning")
+    user_in_form = form.username.data
+    userss = []
+    try:
+        userss = db.session.execute("select username from users where username = '"+user_in_form+"'").all()
+    except:
+        print("kfera nie dziala znus")
+    if form.username.data != None:
+        if len(userss)==0:
+            if form.password.data != form.retypepassword.data:
+                flash("Hasła muszą być takie same", "warning")
+            else:
+                if form.validate_on_submit():
+                    hashed_password = generate_password_hash(form.password.data)
+                    new_user = User(username=form.username.data, password=hashed_password)
+                    db.session.add(new_user)
+                    db.session.commit()
+                    return redirect(url_for('login'))
+        else:
+            flash("Taka nazwa użytkownika znajduje się już w naszej bazie", "warning")
     return render_template('register.html', form=form)
 
 
@@ -203,16 +215,18 @@ def show_shop(kod_sklepu):
     else:
         abort(404)
 
+
 @app.route("/wines")
 @login_required
 def wines():
     products = Produkt.query.all()
     return render_template('wines.html', products=products)
 
+
 @app.route("/cellar")
 @login_required
 def cellar():
-    query = "select pr.nazwa_produktu, pr.typ_produktu, pr.kraj_pochodzenia, pr.region, pr.rocznik, pr.szczep, pr.kod_produktu from produkt pr join fct_polubione pl on pr.id = pl.produkt_id where pl.klient_id = "+ flask_login.current_user.get_id()
+    query = "select pr.nazwa_produktu, pr.typ_produktu, pr.kraj_pochodzenia, pr.region, pr.rocznik, pr.szczep, pr.kod_produktu from produkt pr join fct_polubione pl on pr.id = pl.produkt_id where pl.klient_id = " + flask_login.current_user.get_id()
     products = db.session.execute(query).all()
     return render_template("cellar.html", products=products)
 
@@ -242,8 +256,13 @@ def like_action(kod_produktu, action):
 @app.route("/product/<kod_produktu>")
 @login_required
 def show_product(kod_produktu):
-    liked = db.session.execute(
-        "select pr.nazwa_produktu, pr.typ_produktu, pr.kraj_pochodzenia, pr.region, pr.rocznik, pr.szczep, pr.opis, case when pl.produkt_id is null then 0 when pl.produkt_id is not null then 1 else -1 end as czy_polubione from produkt pr left join fct_polubione pl on pr.id = pl.produkt_id where pr.kod_produktu = '" + kod_produktu + "' and (pl.klient_id = " + flask_login.current_user.get_id() + " or pl.klient_id is null);").first()[-1]
+    liked = 0
+    id_produktu = Produkt.query.filter_by(kod_produktu=kod_produktu).first().get_id()
+    try:
+        liked = db.session.execute(
+            "select 1 from fct_polubione pl where pl.produkt_id = " + id_produktu + " and pl.klient_id = " + flask_login.current_user.get_id() + ";").first()[-1]
+    except:
+        print("kfera n ie dziala")
     products = Produkt.query.all()
     products_by_key = {product.kod_produktu: product for product in products}
     produkt = products_by_key.get(kod_produktu)

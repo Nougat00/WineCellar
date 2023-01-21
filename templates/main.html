@@ -54,12 +54,14 @@
             bottom: 0;
             width: 100%;
         }
-
-        .arrow {
-            position: fixed; /* or absolute */
-            top: 50px;
-            left: 50px;
-        }
+    .arrow{
+        position: -webkit-sticky;
+        position: sticky;
+        top: 0;
+        color: aliceblue;
+        font-size: 40px;
+        padding: 40px;
+    }
 
     </style>
 </head>
@@ -93,9 +95,9 @@
     </nav>
     {% block back %}
         <div class="arrow">
-        <button onclick="history.back(-1)">
-            <i class="fa-solid fa-arrow-left-long"></i>
-        </button></div>
+        <a onclick="history.back()">
+            <i class="fa fa-arrow-circle-left" aria-hidden="true"></i>
+        </a></div>
     {% endblock %}
 {% endblock %}
 <div class="container">
