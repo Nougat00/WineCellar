@@ -1,3 +1,4 @@
+import flask_login
 from flask import Flask, render_template, url_for, redirect, abort, flash
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
 from flask_wtf import FlaskForm
@@ -18,7 +19,6 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://winecellar:Dupsko1234@winecella
 app.config['SECRET_KEY'] = 'supersecret'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 
-# extensions
 db = SQLAlchemy(app)
 
 
@@ -27,6 +27,9 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False, unique=True)
     password = db.Column(db.String(80), nullable=False)
+
+    def get_id(self):
+        return str(self.id)
 
 
 class Produkt(db.Model):
@@ -44,6 +47,10 @@ class Produkt(db.Model):
     created_ts = db.Column(db.DateTime())
     valid_from_date = db.Column(db.DateTime())
     valid_to_date = db.Column(db.DateTime())
+    link = db.Column(db.String(200))
+
+    def get_id(self):
+        return str(self.id)
 
 
 class Sklep(db.Model):
@@ -68,6 +75,15 @@ class Oferta_sklepu(db.Model):
     status = db.Column(db.Boolean())
     data_wprowadzenia = db.Column(db.Date())
     liczba_sztuk = db.Column(db.Integer())
+    cena = db.Column(db.Numeric(8, 2))
+
+
+class Polubione(db.Model):
+    __tablename__ = "fct_polubione"
+    id = db.Column(db.Integer, primary_key=True)
+    klient_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    produkt_id = db.Column(db.Integer, db.ForeignKey('produkt.id'))
+    created_ts = db.Column(db.DateTime())
 
 
 login_manager = LoginManager()
@@ -157,6 +173,7 @@ def register():
 
 
 @app.route('/location')
+@login_required
 def location_on_map():
     # Your Google Maps API key
     api_key = "AIzaSyBs7UtztlVDEZtUey4m--mY5-m9y-gR1NQ"
@@ -166,19 +183,21 @@ def location_on_map():
 
 
 @app.route("/shops")
+@login_required
 def shops():
     shops = Sklep.query.all()
     return render_template('shops.html', shops=shops)
 
 
 @app.route("/shops/<kod_sklepu>")
+@login_required
 def show_shop(kod_sklepu):
     shops = Sklep.query.all()
     shops_by_key = {shop.kod_sklepu: shop for shop in shops}
     shop = shops_by_key.get(kod_sklepu)
-    result = db.engine.execute("select pr.nazwa_produktu, os.liczba_sztuk, pr.typ_produktu, pr.kraj_pochodzenia, pr.region, pr.rocznik, pr.szczep, pr.opis from produkt pr join oferta_sklepu os on pr.id = os.produkt_id join sklep sk on os.sklep_id = sk.id where os.liczba_sztuk > 0 and kod_sklepu = '"+kod_sklepu+"'")
+    result = db.engine.execute(
+        "select pr.nazwa_produktu, os.liczba_sztuk, pr.typ_produktu, pr.kraj_pochodzenia, pr.region, pr.rocznik, pr.szczep, pr.opis, pr.kod_produktu from produkt pr join oferta_sklepu os on pr.id = os.produkt_id join sklep sk on os.sklep_id = sk.id where os.liczba_sztuk > 0 and kod_sklepu = '" + kod_sklepu + "'")
     products = [row for row in result]
-    print(products)
     if shop:
         return render_template('map.html', shop=shop, products=products)
     else:
@@ -186,18 +205,46 @@ def show_shop(kod_sklepu):
 
 
 @app.route("/wines")
+@login_required
 def wines():
     products = Produkt.query.all()
     return render_template('wines.html', products=products)
 
 
-@app.route("/wines/<kod_produktu>")
+def like_wine(kod_produktu):
+    id_produktu = Produkt.query.filter_by(kod_produktu=kod_produktu).first().get_id()
+    db.session.execute(
+        "insert into fct_polubione (klient_id, produkt_id, created_ts) values (" + flask_login.current_user.get_id() + ", " + id_produktu + ", now());")
+
+
+def unlike_wine(kod_produktu):
+    id_produktu = Produkt.query.filter_by(kod_produktu=kod_produktu).first().get_id()
+    db.session.execute(
+        "delete from fct_polubione where klient_id = " + flask_login.current_user.get_id() + " and produkt_id = " + id_produktu)
+
+
+@app.route("/product/<kod_produktu>/<action>")
+@login_required
+def like_action(kod_produktu, action):
+    if action == 'like':
+        like_wine(kod_produktu)
+    elif action == 'unlike':
+        unlike_wine(kod_produktu)
+    return redirect(request.referrer)
+
+
+@app.route("/product/<kod_produktu>")
+@login_required
 def show_product(kod_produktu):
+    liked = db.session.execute(
+        "select pr.nazwa_produktu, pr.typ_produktu, pr.kraj_pochodzenia, pr.region, pr.rocznik, pr.szczep, pr.opis, case when pl.produkt_id is null then 0 when pl.produkt_id is not null then 1 else -1 end as czy_polubione from produkt pr left join fct_polubione pl on pr.id = pl.produkt_id where pr.kod_produktu = '" + kod_produktu + "' and (pl.klient_id = " + flask_login.current_user.get_id() + " or pl.klient_id is null);").first()[-1]
     products = Produkt.query.all()
     products_by_key = {product.kod_produktu: product for product in products}
-    product = products_by_key.get(kod_produktu)
-    if product:
-        return render_template('product.html', product=product)
+    produkt = products_by_key.get(kod_produktu)
+    shops = db.engine.execute(
+        "select sk.kod_sklepu, sk.nazwa, sk.email, sk.telefon, os.liczba_sztuk, os.cena from produkt pr join oferta_sklepu os on pr.id = os.produkt_id join sklep sk on os.sklep_id = sk.id where pr.kod_produktu = '" + kod_produktu + "' and os.liczba_sztuk > 0 order by os.cena ASC")
+    if produkt:
+        return render_template('product.html', produkt=produkt, shops=shops, liked=liked)
     else:
         abort(404)
 
