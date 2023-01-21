@@ -1,33 +1,101 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <title>Shops</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-    <style>
-        .custom-btn {
-    color: #EA5455;
-        }
-                body {
-            background-color: #2A2A2B;
-        }
+{% extends "main.html" %}
+{% block style %}
+    .more a{
+    color: aliceblue;
+    font-size: 12px;
+    }
+    td{
+    color: aliceblue;
+    }
+    th{
+    color: aliceblue;
+    }
 
-    </style>
-</head>
-<body>
-        <div class="d-flex justify-content-between">
-            <a class="btn btn-danger" href="{{url_for('dashboard')}}">Strona główna</a>
-            <a class="btn btn-danger" href="{{url_for('logout')}}">Wyloguj się</a>
+{% endblock %}
+{% block scripts %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8"
+            src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.js"></script>
 
-        </div>
-    <a class="btn btn-lg custom-btn" href="{{url_for('logout')}}">Press here to logout</a>
-<div class="container">
-    <h1>Choose a Shop</h1>
-    {% for shop in shops %}
-        <p><a class="btn btn-lg custom-btn" href="wines/{{ shop.kod_sklepu }}">{{ shop.nazwa }}</a></p>
-    {% endfor %}
-</div>
-</body>
-</html>
+{% endblock %}
+{% block content %}
+    <body>
+    <h3>Wyszukaj produkt</h3>
+
+    <table id="winesTable" class="table table-striped table-dark">
+        <thead>
+        <tr>
+            <th>Nazwa produktu
+                <input type="text" id="name-search" onkeyup="search()" placeholder="Nazwa produktu" class="table-search-filters">
+            </th>
+            <th>Typ produktu
+                <input type="text" id="type-search" onkeyup="search()" placeholder="Typ produktu" class="table-search-filters">
+            </th>
+            <th>Kraj pochodzenia
+            <input type="text" id="country-search" onkeyup="search()" placeholder="Kraj pochodzenia" class="table-search-filters">
+            </th>
+            <th>Region
+                <input type="text" id="area-search" onkeyup="search()" placeholder="Region" class="table-search-filters">
+            </th>
+            <th>Rocznik
+            <input type="text" id="age-search" onkeyup="search()" placeholder="Rocznik" class="table-search-filters">
+            </th>
+            <th>Szczep
+            <input type="text" id="strain-search" onkeyup="search()" placeholder="Szczep" class="table-search-filters">
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for product in products %}
+            <tr>
+                <td>{{ product.nazwa_produktu }}</td>
+                <td>{{ product.typ_produktu }}</td>
+                <td>{{ product.kraj_pochodzenia }}</td>
+                <td>{{ product.region }}</td>
+                <td>{{ product.rocznik }}</td>
+                <td>{{ product.szczep }}</td>
+                <td>
+                    <div class="more"><a class="btn btn-lg custom-btn" href="/product/{{ product.kod_produktu }}">Zobacz
+                        więcej</a></div>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        var input_name = document.getElementById("name-search");
+        var input_type = document.getElementById("type-search");
+        var input_country = document.getElementById("country-search");
+        var input_area = document.getElementById("area-search");
+        var input_age = document.getElementById("age-search");
+        var input_strain = document.getElementById("strain-search");
+        var table = document.getElementById("winesTable");
+
+        function search() {
+            let filter_name = input_name.value.toUpperCase();
+            let filter_type = input_type.value.toUpperCase();
+            let filter_country = input_country.value.toUpperCase();
+            let filter_area = input_area.value.toUpperCase();
+            let filter_age = input_age.value.toUpperCase();
+            let filter_strain = input_strain.value.toUpperCase();
+            let tr = table.rows;
+            for (let i = 1; i < tr.length; i++) {
+                td = tr[i].cells;
+                td_name = td[0].innerText;
+                td_type = td[1].innerText;
+                td_country = td[2].innerText;
+                td_area = td[3].innerText;
+                td_age = td[4].innerText;
+                td_strain = td[5].innerText;
+                if (td_name.toUpperCase().indexOf(filter_name) > -1 && td_type.toUpperCase().indexOf(filter_type) > -1 && td_country.toUpperCase().indexOf(filter_country) > -1
+                    && td_area.toUpperCase().indexOf(filter_area) > -1 && td_age.toUpperCase().indexOf(filter_age) > -1 && td_strain.toUpperCase().indexOf(filter_strain) > -1) {
+                    tr[i].style.display = "";
+                } else
+                    tr[i].style.display = "none";
+            }
+        }
+    </script>
+
+{% endblock %}
