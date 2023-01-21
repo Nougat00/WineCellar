@@ -13,11 +13,18 @@
     margin: 50px;
     display: flex;
     align-items: center;}
-
-
+    .more a{
+    color: aliceblue;
+    font-size: 12px;
+    }
+    td{
+    color: aliceblue;
+    }
+    th{
+    color: aliceblue;
+    }
 
 {% endblock %}
-
 {% block content %}
     <h1 class="my-4">
         {{ produkt.nazwa_produktu }}
@@ -40,7 +47,40 @@
                 <dd>{{ produkt.region }}</dd>
                 <dt>Rocznik</dt>
                 <dd>{{ produkt.rocznik }}</dd>
+                <dt>Dodaj produkt do ulubionych</dt>
+                {% if liked == 1 %}
+                    <a href="{{ url_for('like_action', kod_produktu= produkt.kod_produktu , action='unlike') }}"><i class="fa fa-heart" aria-hidden="true"></i></a>
+                {% else %}
+                    <a href="{{ url_for('like_action', kod_produktu= produkt.kod_produktu  ,action='like') }}"><i class="fa fa-heart-o" aria-hidden="true"></i></a>
+                {% endif %}
             </dl>
         </div>
+        <h3>Lista sklepów posiadająca ten produkt</h3>
+        <table id="winesTable" class="table table-striped">
+            <thead>
+            <tr>
+                <th>Nazwa sklepu</th>
+                <th>Email</th>
+                <th>Telefon</th>
+                <th>Liczba sztuk</th>
+                <th>Cena</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for shop in shops %}
+                <tr>
+                    <td>{{ shop.nazwa }}</td>
+                    <td>{{ shop.email }}</td>
+                    <td>{{ shop.telefon }}</td>
+                    <td>{{ shop.liczba_sztuk }}</td>
+                    <td>{{ shop.cena }}</td>
+                    <td>
+                        <div class="more"><a class="btn btn-lg custom-btn" href="/shops/{{ shop.kod_sklepu }}">Zobacz
+                            więcej</a></div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
 {% endblock %}
